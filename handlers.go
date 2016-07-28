@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -169,6 +170,12 @@ func RespondWith(statusCode int, body interface{}, optionalHeader ...http.Header
 			copyHeader(optionalHeader[0], w.Header())
 		}
 		w.WriteHeader(statusCode)
+
+		if reader, ok := body.(io.Reader); ok {
+			io.Copy(w, reader)
+			return
+		}
+
 		switch x := body.(type) {
 		case string:
 			w.Write([]byte(x))
